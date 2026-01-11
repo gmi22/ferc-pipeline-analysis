@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# Data
+*.db
+*.sqlite
+*.csv
+*.xlsx
+*.parquet
+
+# Secrets
+.env
+
+# OS
+.DS_Store
+Thumbs.db
