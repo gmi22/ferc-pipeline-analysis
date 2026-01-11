@@ -39,7 +39,6 @@ pivoted_kpi = df_kpis.pivot_table(
 
 
 
-#pivoted_kpi["Asset Economics"] = np.where(pivoted_kpi['% Negotiated Rate'] > .60, 'Negotiated', 'Cost of Service')
 
 conditions = [
     pivoted_kpi["% Negotiated Rate"] < 0.49,
@@ -53,7 +52,7 @@ choices = [
     "Negotiated"
 ]
 
-pivoted_kpi["Asset Economics"] = np.select(
+pivoted_kpi["Rate Structure"] = np.select(
     conditions,
     choices,
     default="Unknown"
@@ -96,7 +95,7 @@ pivoted_kpi = pivoted_kpi.drop(columns=["rorb_score","om_score","reinvestment_sc
 column_order = [
     "Asset",
     "RORB",
-    "Asset Economics",
+    "Rate Structure",
     "Capital Posture",
     "O&M Intensity",
     "Unit Operating Cost",
@@ -272,4 +271,8 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+
+with st.sidebar:
+    st.header("Filters")
 
