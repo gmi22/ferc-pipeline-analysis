@@ -40,7 +40,26 @@ pivoted_kpi = df_kpis.pivot_table(
 
 
 
-pivoted_kpi["Asset Economics"] = np.where(pivoted_kpi['% Negotiated Rate'] > .60, 'Negotiated', 'Cost of Service')  
+#pivoted_kpi["Asset Economics"] = np.where(pivoted_kpi['% Negotiated Rate'] > .60, 'Negotiated', 'Cost of Service')
+
+conditions = [
+    pivoted_kpi["% Negotiated Rate"] < 0.49,
+    pivoted_kpi["% Negotiated Rate"].between(0.50, 0.59, inclusive="both"),
+    pivoted_kpi["% Negotiated Rate"] >= 0.59
+]
+
+choices = [
+    "Cost of Service",
+    "Mixed",
+    "Negotiated"
+]
+
+pivoted_kpi["Asset Economics"] = np.select(
+    conditions,
+    choices,
+    default="Unknown"
+)
+  
 
 def classify_capital_posture(ratio):
     if pd.isna(ratio):
@@ -50,7 +69,7 @@ def classify_capital_posture(ratio):
     elif ratio <= 1.2:
         return "Maintained"
     else:
-        return "Expanded"
+        return "Growth"
 
 pivoted_kpi["Capital Posture"] = pivoted_kpi["Reinvestment Ratio"].apply(classify_capital_posture)
 
