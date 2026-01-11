@@ -8,12 +8,11 @@ st.set_page_config(layout="wide")
 
 
 
-st.title("Main App")
-st.write("Select a page from the sidebar")
+st.title("Pipline Rank")
+
 
 from db.repository import fetch_operating_revenue, fetch_miles,fetch_volume,fetch_negotiated_revenue,fetch_net_plant,fetch_kpis
 
-st.title("Operating Revenue")
 
 # ---- user input
 year = st.selectbox("Year", ["2022", "2023", "2024"], index=2)
@@ -44,7 +43,7 @@ pivoted_kpi = df_kpis.pivot_table(
 
 conditions = [
     pivoted_kpi["% Negotiated Rate"] < 0.49,
-    pivoted_kpi["% Negotiated Rate"].between(0.50, 0.59, inclusive="both"),
+    pivoted_kpi["% Negotiated Rate"].between(0.49, 0.59, inclusive="both"),
     pivoted_kpi["% Negotiated Rate"] >= 0.59
 ]
 
@@ -181,77 +180,96 @@ with st.expander("KPI Methodology"):
 
 
 
-fig, ax = plt.subplots(figsize=(12, 10))
 
-# Scatter
-ax.scatter(
-    pivoted_kpi["RORB"],
-    pivoted_kpi["O&M Intensity"],
-    alpha=0.10
+
+##------Plotly---------
+
+
+
+import plotly.express as px
+
+# Compute medians
+x_med = pivoted_kpi["RORB"].median()
+y_med = pivoted_kpi["O&M Intensity"].median()
+
+# Axis ranges
+x_min, x_max = pivoted_kpi["RORB"].min(), pivoted_kpi["RORB"].max()
+y_min, y_max = pivoted_kpi["O&M Intensity"].min(), pivoted_kpi["O&M Intensity"].max()
+
+# Quadrant centers
+quad_centers = {
+    "Under Pressure": ((x_med + x_max) / 2, (y_med + y_max) / 2),
+    "Inefficient Earners": ((x_min + x_med) / 2, (y_med + y_max) / 2),
+    "Underperformers": ((x_min + x_med) / 2, (y_min + y_med) / 2),
+    "Efficient Earners": ((x_med + x_max) / 2, (y_min + y_med) / 2),
+}
+
+# Scatter plot with asset labels
+fig = px.scatter(
+    pivoted_kpi,
+    x="RORB",
+    y="O&M Intensity",
+    text="Asset",                # show asset names
+    hover_name="Asset",
+    color="Capital Posture"
 )
 
 # Median lines
-ax.axvline(pivoted_kpi["RORB"].median(), linestyle="--")
-ax.axhline(pivoted_kpi["O&M Intensity"].median(), linestyle="--")
+fig.add_vline(x=x_med, line_dash="dash")
+fig.add_hline(y=y_med, line_dash="dash")
 
-# Quadrant labels
-ax.text(
-    0.75, 0.90,
-    "Under Pressure\nHigh returns, high costs",
-    transform=ax.transAxes,
-    fontsize=10,
-    ha="center",
-    va="center",
-    alpha=0.8
+# Asset label styling
+fig.update_traces(
+    textposition="middle right",     # try top right / bottom right if crowded
+    textfont_size=11,
+    textfont_color="rgba(0,0,0,0.65)"
 )
 
-ax.text(
-    0.25, 0.90,
-    "Inefficient Earners\nLow returns, high costs",
-    transform=ax.transAxes,
-    fontsize=10,
-    ha="center",
-    va="center",
-    alpha=0.8
+# Quadrant annotations (closer to center)
+fig.add_annotation(
+    x=quad_centers["Under Pressure"][0],
+    y=quad_centers["Under Pressure"][1],
+    text="<b>Under Pressure</b><br>High returns, high costs",
+    showarrow=False,
+    font=dict(size=12, color="gray"),
+    align="center"
 )
 
-ax.text(
-    0.25, 0.10,
-    "Underperformers\nLow returns, low costs",
-    transform=ax.transAxes,
-    fontsize=10,
-    ha="center",
-    va="center",
-    alpha=0.8
+fig.add_annotation(
+    x=quad_centers["Inefficient Earners"][0],
+    y=quad_centers["Inefficient Earners"][1],
+    text="<b>Inefficient Earners</b><br>Low returns, high costs",
+    showarrow=False,
+    font=dict(size=12, color="red"),
+    align="center"
 )
 
-ax.text(
-    0.75, 0.10,
-    "Efficient Earners\nHigh returns, low costs",
-    transform=ax.transAxes,
-    fontsize=10,
-    ha="center",
-    va="center",
-    alpha=0.8
+fig.add_annotation(
+    x=quad_centers["Underperformers"][0],
+    y=quad_centers["Underperformers"][1],
+    text="<b>Underperformers</b><br>Low returns, low costs",
+    showarrow=False,
+    font=dict(size=12, color="gray"),
+    align="center"
 )
 
-# Labels
-ax.set_xlabel("Return on Rate Base (RORB)")
-ax.set_ylabel("O&M Intensity (O&M ÷ Rate Base)")
-ax.set_title("Pipeline Economic Performance Quadrant")
+fig.add_annotation(
+    x=quad_centers["Efficient Earners"][0],
+    y=quad_centers["Efficient Earners"][1],
+    text="<b>Efficient Earners</b><br>High returns, low costs",
+    showarrow=False,
+    font=dict(size=12, color="green"),
+    align="center"
+)
 
-# Optional annotations
-for _, row in pivoted_kpi.iterrows():
-    ax.annotate(
-        row["Asset"],
-        (row["RORB"], row["O&M Intensity"]),
-        fontsize=8,
-        alpha=0.7
-    )
+# Layout
+fig.update_layout(
+    title="Pipeline Economic Performance Quadrant",
+    xaxis_title="Return on Rate Base (RORB)",
+    yaxis_title="O&M Intensity (O&M ÷ Rate Base)",
+    height=700,
+    margin=dict(l=40, r=40, t=60, b=40)
+)
 
-plt.tight_layout()
-
-# 🔑 THIS is the Streamlit line
-st.pyplot(fig)
-
+st.plotly_chart(fig, use_container_width=True)
 
