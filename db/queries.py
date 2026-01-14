@@ -106,6 +106,31 @@ SELECT
 FROM KPIs
 WHERE Year = ?
   AND Qtr = "Q4"
+
 """
+
+
+GET_Assets =  """
+SELECT
+    Asset 
+
+FROM IS_data
+
+"""
+
+
+GET_OPERATING_REVENUE_ALL = """
+SELECT
+    Asset,
+    Year,
+    Qtr,
+    SUM("Total Current Year to Date Balance for Quarter/Year") AS operating_revenue
+FROM IS_data
+WHERE "Title of Account (Class)" = ?
+  AND Qtr = 'Q4'
+GROUP BY Asset, Year, Qtr
+"""
+
+
 
 

@@ -102,6 +102,7 @@ column_order = [
     "Capital Intensity",
     "Reinvestment Ratio",
     "% Negotiated Rate",
+    "% Discount Rate",
     "% Volume Growth/Decline",
     "final_score",
 ]
@@ -114,6 +115,7 @@ pivoted_kpi = pivoted_kpi[column_order]
 percent_cols = {
     "RORB": "Operating Income ÷ Net Plant",
     "% Negotiated Rate": "Negotiated Revenue ÷ Total Revenue",
+    "% Discount Rate" : "Discount Revenue ÷ Total Revenue",
     "% Volume Growth/Decline": "YoY throughput change"
 }
 
@@ -157,7 +159,7 @@ for col, desc in ratio_cols.items():
 
 st.dataframe(
     display_df,
-    use_container_width=True,
+    #use_container_width=True,
     height=600,
     column_config=column_config
 )

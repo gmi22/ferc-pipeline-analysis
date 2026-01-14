@@ -1,6 +1,6 @@
 import pandas as pd
 from db.connections import get_connection
-from db.queries import GET_OPERATING_REVENUE,GET_Miles,GET_OPEX,GET_Volume,GET_Negotiated_Revenue,GET_NetPlant,GET_KPIs
+from db.queries import GET_OPERATING_REVENUE,GET_Miles,GET_OPEX,GET_Volume,GET_Negotiated_Revenue,GET_NetPlant,GET_KPIs,GET_Assets,GET_OPERATING_REVENUE_ALL
 
 def fetch_operating_revenue(year: int) -> pd.DataFrame:
     conn = get_connection()
@@ -93,4 +93,28 @@ def fetch_kpis(year: int) -> pd.DataFrame:
     )
     conn.close()
     return df_kpis
+
+
+
+def fetch_asset() -> pd.DataFrame:
+    conn = get_connection()
+    df_assets = pd.read_sql(
+        GET_Assets,
+        conn,
+
+    )
+    conn.close()
+    return df_assets
+
+
+def fetch_operating_revenue_all() -> pd.DataFrame:
+    conn = get_connection()
+    df_revenue_all = pd.read_sql(
+        GET_OPERATING_REVENUE_ALL,
+        conn,
+        params=("OperatingRevenues",)
+    )
+    conn.close()
+    return df_revenue_all
+
 
