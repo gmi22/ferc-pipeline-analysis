@@ -133,4 +133,29 @@ GROUP BY Asset, Year, Qtr
 
 
 
+GET_ALL_REVENUE_DATA = """
+SELECT
+    "(a)",
+    Year,
+    Qtr,
+    "Total Operating Revenues Amount for Current Year" AS Revenue
+FROM Rev_data
+  WHERE Asset = ?
+  AND Qtr = "Q4"
+"""
+
+
+GET_ALL_VOLUME_DATA = """
+SELECT
+    "(a)",
+    Year,
+    Qtr,
+    "Dekatherm of Natural Gas Amount for Current Year" AS Volume
+FROM Rev_data
+  WHERE Asset = ?
+  AND Qtr = "Q4"
+"""
+
+
+
 
