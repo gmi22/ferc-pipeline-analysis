@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 
 
 
-st.title("Pipline Rank")
+st.title("Pipeline Rank")
 
 
 from db.repository import fetch_operating_revenue, fetch_miles,fetch_volume,fetch_negotiated_revenue,fetch_net_plant,fetch_kpis
@@ -89,10 +89,48 @@ pivoted_kpi["final_score"] = (
 
 )
 
+pivoted_kpi["Rank"] = pivoted_kpi["final_score"].rank(ascending=False, method="min").astype(int)
+
 pivoted_kpi = pivoted_kpi.drop(columns=["rorb_score","om_score","reinvestment_score","Year","Qtr"])
+
+def slider_range(df, column, label):
+    series = df[column].dropna()
+    if series.empty:
+        return None
+    min_val = float(series.min())
+    max_val = float(series.max())
+    return st.slider(label, min_val, max_val, (min_val, max_val))
+
+with st.sidebar:
+    st.header("Filters")
+    st.caption("Financial")
+    rorb_range = slider_range(pivoted_kpi, "RORB", "RORB (%)")
+    st.caption("Cost")
+    om_range = slider_range(pivoted_kpi, "O&M Intensity", "O&M Intensity (ratio)")
+    cap_range = slider_range(pivoted_kpi, "Capital Intensity", "Capital Intensity (ratio)")
+    unit_op_range = slider_range(pivoted_kpi, "Unit Operating Cost", "Unit Operating Cost (per unit)")
+    st.caption("Capital")
+    reinvestment_range = slider_range(pivoted_kpi, "Reinvestment Ratio", "Reinvestment Ratio (ratio)")
+
+filtered_kpi = pivoted_kpi.copy()
+if rorb_range:
+    filtered_kpi = filtered_kpi[filtered_kpi["RORB"].between(*rorb_range)]
+if om_range:
+    filtered_kpi = filtered_kpi[filtered_kpi["O&M Intensity"].between(*om_range)]
+if cap_range:
+    filtered_kpi = filtered_kpi[filtered_kpi["Capital Intensity"].between(*cap_range)]
+if unit_op_range:
+    filtered_kpi = filtered_kpi[filtered_kpi["Unit Operating Cost"].between(*unit_op_range)]
+if reinvestment_range:
+    filtered_kpi = filtered_kpi[filtered_kpi["Reinvestment Ratio"].between(*reinvestment_range)]
+
+if filtered_kpi.empty:
+    st.warning("No rows match the current filters.")
+    st.stop()
 
 
 column_order = [
+    "Rank",
     "Asset",
     "RORB",
     "Rate Structure",
@@ -107,28 +145,28 @@ column_order = [
     "final_score",
 ]
 
-pivoted_kpi = pivoted_kpi[column_order]
+filtered_kpi = filtered_kpi[column_order]
 
 
 # ---- display
 
 percent_cols = {
-    "RORB": "Operating Income ÷ Net Plant",
-    "% Negotiated Rate": "Negotiated Revenue ÷ Total Revenue",
-    "% Discount Rate" : "Discount Revenue ÷ Total Revenue",
+    "RORB": "Operating Income / Net Plant",
+    "% Negotiated Rate": "Negotiated Revenue / Total Revenue",
+    "% Discount Rate" : "Discount Revenue / Total Revenue",
     "% Volume Growth/Decline": "YoY throughput change"
 }
 
 ratio_cols = {
-    "O&M Intensity": "O&M Expense ÷ Rate Base",
-    "Unit Operating Cost": "O&M Expense ÷ Throughput",
-    "Capital Intensity": "Rate Base ÷ Throughput",
-    "Reinvestment Ratio": "Capital Expenditures ÷ Depreciation"
+    "O&M Intensity": "O&M Expense / Rate Base",
+    "Unit Operating Cost": "O&M Expense / Throughput",
+    "Capital Intensity": "Rate Base / Throughput",
+    "Reinvestment Ratio": "Capital Expenditures / Depreciation"
 }
 
 
 
-display_df = pivoted_kpi.copy()
+display_df = filtered_kpi.copy()
 
 # Scale percent KPIs for display
 for col in percent_cols:
@@ -161,6 +199,7 @@ st.dataframe(
     display_df,
     #use_container_width=True,
     height=600,
+    hide_index=True,
     column_config=column_config
 )
 
@@ -171,11 +210,11 @@ st.dataframe(
 
 with st.expander("KPI Methodology"):
     st.markdown("""
-    **RORB** = Operating Income ÷ Net Plant  
-    **O&M Intensity** = O&M Expense ÷ Rate Base  
-    **Unit Operating Cost** = O&M Expense ÷ Throughput  
-    **Capital Intensity** = Rate Base ÷ Throughput  
-    **Reinvestment Ratio** = Capital Expenditures ÷ Depreciation  
+    **RORB** = Operating Income / Net Plant  
+    **O&M Intensity** = O&M Expense / Rate Base  
+    **Unit Operating Cost** = O&M Expense / Throughput  
+    **Capital Intensity** = Rate Base / Throughput  
+    **Reinvestment Ratio** = Capital Expenditures / Depreciation  
     """)
 
 
@@ -185,7 +224,9 @@ with st.expander("KPI Methodology"):
 
 ##------Plotly---------
 
-
+st.markdown(
+    "**This view compares capital returns against operating cost pressure to highlight where pipeline economics are structurally strong versus fragile.**"
+)
 
 import plotly.express as px
 
@@ -207,7 +248,7 @@ quad_centers = {
 
 # Scatter plot with asset labels
 fig = px.scatter(
-    pivoted_kpi,
+    filtered_kpi,
     x="RORB",
     y="O&M Intensity",
     text="Asset",                # show asset names
@@ -267,14 +308,10 @@ fig.add_annotation(
 fig.update_layout(
     title="Pipeline Economic Performance Quadrant",
     xaxis_title="Return on Rate Base (RORB)",
-    yaxis_title="O&M Intensity (O&M ÷ Rate Base)",
+    yaxis_title="O&M Intensity (O&M / Rate Base)",
     height=700,
     margin=dict(l=40, r=40, t=60, b=40)
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
-
-with st.sidebar:
-    st.header("Filters")
 
