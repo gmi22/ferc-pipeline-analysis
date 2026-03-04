@@ -253,7 +253,12 @@ fig = px.scatter(
     y="O&M Intensity",
     text="Asset",                # show asset names
     hover_name="Asset",
-    color="Capital Posture"
+    color="Capital Posture",
+    color_discrete_map={
+        "Growth": "green",
+        "Maintained": "royalblue",
+        "Harvested": "firebrick",
+    },
 )
 
 # Median lines
