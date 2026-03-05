@@ -242,7 +242,7 @@ y_min, y_max = pivoted_kpi["O&M Intensity"].min(), pivoted_kpi["O&M Intensity"].
 quad_centers = {
     "Under Pressure": ((x_med + x_max) / 2, (y_med + y_max) / 2),
     "Inefficient Earners": ((x_min + x_med) / 2, (y_med + y_max) / 2),
-    "Underperformers": ((x_min + x_med) / 2, (y_min + y_med) / 2),
+    "Mature / Stable Systems": ((x_min + x_med) / 2, (y_min + y_med) / 2),
     "Efficient Earners": ((x_med + x_max) / 2, (y_min + y_med) / 2),
 }
 
@@ -292,9 +292,9 @@ fig.add_annotation(
 )
 
 fig.add_annotation(
-    x=quad_centers["Underperformers"][0],
-    y=quad_centers["Underperformers"][1],
-    text="<b>Underperformers</b><br>Low returns, low costs",
+    x=quad_centers["Mature / Stable Systems"][0],
+    y=quad_centers["Mature / Stable Systems"][1],
+    text="<b>Mature / Stable Systems</b><br>Low returns, low costs",
     showarrow=False,
     font=dict(size=12, color="gray"),
     align="center"
