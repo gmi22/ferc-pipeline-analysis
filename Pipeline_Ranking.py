@@ -287,7 +287,7 @@ fig.add_annotation(
     y=quad_centers["Inefficient Earners"][1],
     text="<b>Inefficient Earners</b><br>Low returns, high costs",
     showarrow=False,
-    font=dict(size=12, color="red"),
+    font=dict(size=12, color="gray"),
     align="center"
 )
 
@@ -305,7 +305,7 @@ fig.add_annotation(
     y=quad_centers["Efficient Earners"][1],
     text="<b>Efficient Earners</b><br>High returns, low costs",
     showarrow=False,
-    font=dict(size=12, color="green"),
+    font=dict(size=12, color="gray"),
     align="center"
 )
 
