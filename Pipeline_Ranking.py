@@ -6,6 +6,27 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
+st.markdown(
+    """
+    <style>
+    @media (max-width: 768px) {
+      .block-container {
+        padding-top: 0.75rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+      }
+      h1 {
+        font-size: 1.55rem !important;
+      }
+      div[data-testid="stMarkdownContainer"] p {
+        font-size: 0.95rem;
+      }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 
 st.title("Pipeline Rank")
@@ -103,6 +124,7 @@ def slider_range(df, column, label):
 
 with st.sidebar:
     st.header("Filters")
+    mobile_view = st.toggle("Mobile-friendly view", value=False)
     st.caption("Financial")
     rorb_range = slider_range(pivoted_kpi, "RORB", "RORB (%)")
     st.caption("Cost")
@@ -147,6 +169,15 @@ column_order = [
 
 filtered_kpi = filtered_kpi[column_order]
 
+mobile_column_order = [
+    "Rank",
+    "Asset",
+    "RORB",
+    "O&M Intensity",
+    "Rate Structure",
+    "Capital Posture",
+]
+
 
 # ---- display
 
@@ -167,6 +198,8 @@ ratio_cols = {
 
 
 display_df = filtered_kpi.copy()
+if mobile_view:
+    display_df = display_df[mobile_column_order]
 
 # Scale percent KPIs for display
 for col in percent_cols:
@@ -197,8 +230,8 @@ for col, desc in ratio_cols.items():
 
 st.dataframe(
     display_df,
-    #use_container_width=True,
-    height=600,
+    use_container_width=True,
+    height=360 if mobile_view else 600,
     hide_index=True,
     column_config=column_config
 )
@@ -251,7 +284,7 @@ fig = px.scatter(
     filtered_kpi,
     x="RORB",
     y="O&M Intensity",
-    text="Asset",                # show asset names
+    text=None if mobile_view else "Asset",  # reduce clutter on mobile
     hover_name="Asset",
     color="Capital Posture",
     color_discrete_map={
@@ -268,7 +301,7 @@ fig.add_hline(y=y_med, line_dash="dash")
 # Asset label styling
 fig.update_traces(
     textposition="middle right",     # try top right / bottom right if crowded
-    textfont_size=11,
+    textfont_size=9 if mobile_view else 11,
     textfont_color="rgba(0,0,0,0.65)"
 )
 
@@ -278,7 +311,7 @@ fig.add_annotation(
     y=quad_centers["Under Pressure"][1],
     text="<b>Under Pressure</b><br>High returns, high costs",
     showarrow=False,
-    font=dict(size=12, color="gray"),
+    font=dict(size=10 if mobile_view else 12, color="gray"),
     align="center"
 )
 
@@ -287,7 +320,7 @@ fig.add_annotation(
     y=quad_centers["Inefficient Earners"][1],
     text="<b>Inefficient Earners</b><br>Low returns, high costs",
     showarrow=False,
-    font=dict(size=12, color="gray"),
+    font=dict(size=10 if mobile_view else 12, color="gray"),
     align="center"
 )
 
@@ -296,7 +329,7 @@ fig.add_annotation(
     y=quad_centers["Mature / Stable Systems"][1],
     text="<b>Mature / Stable Systems</b><br>Low returns, low costs",
     showarrow=False,
-    font=dict(size=12, color="gray"),
+    font=dict(size=10 if mobile_view else 12, color="gray"),
     align="center"
 )
 
@@ -305,7 +338,7 @@ fig.add_annotation(
     y=quad_centers["Efficient Earners"][1],
     text="<b>Efficient Earners</b><br>High returns, low costs",
     showarrow=False,
-    font=dict(size=12, color="gray"),
+    font=dict(size=10 if mobile_view else 12, color="gray"),
     align="center"
 )
 
@@ -314,7 +347,7 @@ fig.update_layout(
     title="Pipeline Economic Performance Quadrant",
     xaxis_title="Return on Rate Base (RORB)",
     yaxis_title="O&M Intensity (O&M / Rate Base)",
-    height=700,
+    height=440 if mobile_view else 700,
     margin=dict(l=40, r=40, t=60, b=40)
 )
 
