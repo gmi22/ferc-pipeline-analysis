@@ -222,7 +222,11 @@ for col, desc in percent_cols.items():
 for col, desc in ratio_cols.items():
     if col in display_df.columns:
         column_config[col] = st.column_config.NumberColumn(
-            label="Unit Operating Cost ($/Dth)" if col == "Unit Operating Cost" else col,
+            label=(
+                "Unit Operating Cost ($/Dth)" if col == "Unit Operating Cost"
+                else "Capital Intensity ($/Dth)" if col == "Capital Intensity"
+                else col
+            ),
             help=desc,
             format="%.3f"
         )
