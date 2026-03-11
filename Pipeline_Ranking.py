@@ -222,7 +222,7 @@ for col, desc in percent_cols.items():
 for col, desc in ratio_cols.items():
     if col in display_df.columns:
         column_config[col] = st.column_config.NumberColumn(
-            label=col,
+            label="Unit Operating Cost ($/Dth)" if col == "Unit Operating Cost" else col,
             help=desc,
             format="%.3f"
         )
@@ -344,7 +344,7 @@ fig.add_annotation(
 
 # Layout
 fig.update_layout(
-    title="Pipeline Economic Performance Quadrant",
+    title=f"{year} Pipeline Economic Performance Quadrant",
     xaxis_title="Return on Rate Base (RORB)",
     yaxis_title="O&M Intensity (O&M / Rate Base)",
     height=440 if mobile_view else 700,
